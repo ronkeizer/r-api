@@ -62,5 +62,5 @@ app.listen( port, function() {
     console.log( 'Express server listening on port %d in %s mode', port, app.settings.env );
 });
 
-// Commands, e.g.:
+// Example API calls:
 // curl -i -X POST -d 'n_samp=100' http://localhost:3001/api/i81234/runif
