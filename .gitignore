@@ -1,4 +1,4 @@
-config.js
+.DS_store
 .Rhistory
+tmp.out
 node_modules
-*.pdf
