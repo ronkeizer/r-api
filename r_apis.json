@@ -2,6 +2,8 @@
    "runif": {
       "file": "runif.R",
       "description": "Test API",
-      "available": true
+      "authors": "Ron Keizer",
+      "available": true,
+      "required_arguments": ["n_samp"]
    }
 }

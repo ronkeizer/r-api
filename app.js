@@ -55,15 +55,25 @@ function call_R (req, res, apis) {
     if (check_api_key(req.params.apikey)) {
 	if (_.has(apis, req.params.script)) {
             var api = apis[req.params.script];
-            var open = apis[req.params.script].file;
-	    if (api.available) {
-		cmdline = "Rscript " + api.file;
-		if (typeof(input) !== 'undefined') {
-		    for (var key in input) {
-			cmdline += " "+key+"="+input[key];
+            if (api.available) {
+                // check if all reqd arguments were specified
+		var reqd_args = true;
+                for (i in api.required_arguments) {
+		    if (! _.has(input, api.required_arguments[i])) {
+			reqd_args = false;
 		    }
 		}
-		run_cmd(cmdline, res);
+		if (reqd_args) {
+		    cmdline = "Rscript api/" + api.file;
+		    if (typeof(input) !== 'undefined') {
+			for (var key in input) {
+			    cmdline += " "+key+"="+input[key];
+			}
+		    }
+		    run_cmd(cmdline, res);
+		} else {
+		    res.send({ error: "Error: Not all required arguments were specified in the API call. Required arguments: " + api.required_arguments.join()});
+		}
 	    } else {
 	      res.send({ error: "Error: Requested API not available for use at this moment."});
 	    }
