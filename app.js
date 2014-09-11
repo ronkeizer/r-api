@@ -1,23 +1,26 @@
-// Libraries
-var application_root = __dirname,
-    express = require( 'express' ), // uses >4.0
-    morgan         = require('morgan'), // logger
-    bodyParser     = require('body-parser'),
-    methodOverride = require('method-override'),
-    child_process = require('child_process'),
-    helmet = require('helmet'),
-    _ = require('underscore'),
-    fs = require('fs');
+// Example API call:
+// curl -i -X POST -d 'n_samp=100' http://localhost:3001/api/i81234/runif
 
-// Define the APIs in r_apis.json
+// Libraries
+var express          = require('express'),    // server framework
+    debug            = require('debug'),
+    morgan           = require('morgan'),     // logging
+    bodyParser       = require('body-parser'),
+    methodOverride   = require('method-override'),
+    child_process    = require('child_process'),
+    helmet = require('helmet'), // protection against attacks
+    _ = require('underscore'),  // nifty library for arrays / objects
+    fs = require('fs');         // file system actions
+
+// Define the APIs and .R scripts you want use in the file r_apis.json
 var apis = require('./r_apis.json');
 
-// Server (Express 4.0)
+// Server (Express >4.0)
 var app  = express();
 var port = 3001;
-app.use(express.static(__dirname + '/public')); 	// set the static files location /public/img will be /img for users
-app.use(morgan('dev')); 			        // log every request to the console
-app.use(bodyParser()); 					// pull information from html in POST
+app.use(morgan('dev')); 			        // logging
+app.use(bodyParser.urlencoded({ extended: true })); 	// pull information from html in POST
+// app.use(bodyParser.json());                          // if you want to parse json requests
 app.use(methodOverride()); 				// simulate DELETE and PUT
 app.use(helmet());                                      // Some security measures
 app.use(helmet.xframe('deny'));
@@ -46,11 +49,10 @@ function run_cmd (cmdline, res) {
     });
 };
 
-// Function to call R
-call_R = function(req, res, apis) {
+// calling R with arguments
+function call_R (req, res, apis) {
     input = req.body;
     if (check_api_key(req.params.apikey)) {
-        // Create commandline
 	if (_.has(apis, req.params.script)) {
             var api = apis[req.params.script];
             var open = apis[req.params.script].file;
@@ -61,7 +63,6 @@ call_R = function(req, res, apis) {
 			cmdline += " "+key+"="+input[key];
 		    }
 		}
-		// and run
 		run_cmd(cmdline, res);
 	    } else {
 	      res.send({ error: "Error: Requested API not available for use at this moment."});
@@ -78,8 +79,5 @@ app.post( '/api/:apikey/:script', function (req,res) { call_R(req, res, apis) } 
 
 // Start server
 app.listen( port, function() {
-    console.log( 'API server listening on port %d in %s mode', port, app.settings.env );
+    console.log( 'R API server listening on port %d in %s mode', port, app.settings.env );
 });
-
-// Example API call:
-// curl -i -X POST -d 'n_samp=100' http://localhost:3001/api/i81234/runif
